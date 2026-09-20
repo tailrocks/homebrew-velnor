@@ -16,16 +16,20 @@ ruby -c "$formula" >/dev/null
 brew_repository=$(brew --repository) || die "brew --repository failed"
 [[ -n "$brew_repository" && -d "$brew_repository/Library/Taps" ]] || die "Homebrew taps directory missing"
 tap_user=velnor-ci
-tap_repo=homebrew-velnor-checked-out
-tap_path="$brew_repository/Library/Taps/$tap_user/$tap_repo"
-formula_ref="$tap_user/${tap_repo#homebrew-}/velnorctl"
+tap_parent="$brew_repository/Library/Taps/$tap_user"
+mkdir -p "$tap_parent"
+[[ -d "$tap_parent" && ! -L "$tap_parent" ]] || die "tap parent is not a regular directory: $tap_parent"
+tap_path=$(mktemp -d "$tap_parent/homebrew-velnor-checked-out.XXXXXX") || die "cannot create unique disposable tap"
+[[ -d "$tap_path" && ! -L "$tap_path" ]] || die "disposable tap is not a regular directory"
+tap_name=$(basename "$tap_path")
+formula_ref="$tap_user/${tap_name#homebrew-}/velnorctl"
 
 cleanup() {
   local status=$?
-  if [[ -n "${tap_path:-}" && -d "$tap_path" ]]; then
+  if [[ -n "${tap_path:-}" && "$tap_path" == "$tap_parent"/homebrew-velnor-checked-out.* && -d "$tap_path" && ! -L "$tap_path" ]]; then
     rm -rf -- "$tap_path"
   fi
-  rmdir "$brew_repository/Library/Taps/$tap_user" 2>/dev/null || true
+  rmdir "$tap_parent" 2>/dev/null || true
   exit "$status"
 }
 trap cleanup EXIT
