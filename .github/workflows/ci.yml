@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  formula:
+    name: Source formula contract and audit
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check formula Ruby syntax
+        run: ruby -c Formula/velnorctl.rb
+      - name: Verify published archive identity
+        run: ./scripts/test-source-formula-contract.sh
+      - name: Audit checked-out formula
+        run: ./scripts/audit-checked-out-formula.sh

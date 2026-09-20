@@ -18,4 +18,3 @@ The formula version follows the Velnor release tag. The current source still
 reports the independently versioned control-plane package version (`0.1.0`)
 from `velnorctl version`; keep that distinction visible until the upstream
 release contract unifies component versions.
-Homebrew tap for the native Velnor operator CLI
