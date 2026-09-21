@@ -1,0 +1,34 @@
+schema = 2
+
+[generator]
+repository = "tailrocks/homebrew-velnor"
+revision = "be61acbbbfb71db6b51337e547e39de049d4fc15"
+
+[workflow]
+providers = ["github-hosted"]
+automatic_providers = ["github-hosted"]
+default_branch = "main"
+
+[workflow.selectors.github-hosted]
+runs_on = ["ubuntu-24.04"]
+
+[policy]
+ruleset_required_status_checks = ["ci-required", "Policy"]
+ruleset_external_status_checks = ["DCO"]
+
+[[units]]
+id = "tap-local"
+kind = "homebrew"
+label = "Tap local checkout"
+ci_tasks = ["brew:tap-local"]
+
+[[units.products]]
+name = "local-tap"
+task = "brew:tap-local"
+
+[[units]]
+id = "homebrew"
+
+[[units.prerequisites]]
+producer = "tap-local"
+product = "local-tap"
