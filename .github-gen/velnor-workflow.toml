@@ -15,3 +15,20 @@ runs_on = ["ubuntu-24.04"]
 [policy]
 ruleset_required_status_checks = ["ci-required", "Policy"]
 ruleset_external_status_checks = ["DCO"]
+
+[[units]]
+id = "tap-local"
+kind = "homebrew"
+label = "Tap local checkout"
+ci_tasks = ["brew:tap-local"]
+
+[[units.products]]
+name = "local-tap"
+task = "brew:tap-local"
+
+[[units]]
+id = "homebrew"
+
+[[units.prerequisites]]
+producer = "tap-local"
+product = "local-tap"

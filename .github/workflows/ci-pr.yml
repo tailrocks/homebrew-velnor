@@ -126,13 +126,34 @@ jobs:
       plan_digest: ${{ needs.plan.outputs.plan_digest }}
       base_sha: ${{ needs.plan.outputs.base_sha }}
       head_sha: ${{ needs.plan.outputs.head_sha }}
+      mise_runner: true
+      unit_platform: linux-x64
+      unit_trust: untrusted-ok
+      unit_dependencies: tap-local
+      unit_admission: github-hosted
+  github-hosted-tap-local:
+    name: "Homebrew · Tap local checkout · github-hosted — tap-local"
+    if: ${{ !cancelled() && needs.plan.result == 'success' && contains(needs.plan.outputs.units, '"unit_id":"tap-local"') && (true) }}
+    needs: [plan]
+    uses: ./.github/workflows/ci-unit-homebrew.yml
+    with:
+      unit: tap-local
+      provider: github-hosted
+      selected_units: ${{ needs.plan.outputs.units }}
+      selected_unit_ids: ${{ needs.plan.outputs.unit_ids }}
+      scope: ${{ needs.plan.outputs.scope }}
+      full_units: ${{ needs.plan.outputs.full_units }}
+      plan_digest: ${{ needs.plan.outputs.plan_digest }}
+      base_sha: ${{ needs.plan.outputs.base_sha }}
+      head_sha: ${{ needs.plan.outputs.head_sha }}
+      mise_runner: true
       unit_platform: linux-x64
       unit_trust: untrusted-ok
       unit_admission: github-hosted
   ci-required:
     name: ci-required
     if: ${{ !cancelled() }}
-    needs: [plan, github-hosted-homebrew]
+    needs: [plan, github-hosted-homebrew, github-hosted-tap-local]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -217,7 +238,7 @@ jobs:
           SELECTED_UNITS: ${{ needs.plan.outputs.units }}
           PLAN_DIGEST: ${{ needs.plan.outputs.plan_digest }}
           EXCLUDED: ${{ needs.plan.outputs.excluded }}
-          EXPECTED_CALLERS: "[{\"job_id\":\"github-hosted-homebrew\",\"provider\":\"github-hosted\",\"unit_id\":\"homebrew\"}]"
+          EXPECTED_CALLERS: "[{\"job_id\":\"github-hosted-homebrew\",\"provider\":\"github-hosted\",\"unit_id\":\"homebrew\"},{\"job_id\":\"github-hosted-tap-local\",\"provider\":\"github-hosted\",\"unit_id\":\"tap-local\"}]"
           PROVIDER_ADMITTED_GITHUB_HOSTED: ${{ true }}
         shell: bash
         run: |
@@ -271,6 +292,29 @@ jobs:
               skipped) ;;
               success) echo "unexpected CI job github-hosted-homebrew succeeded outside the expected set: the plan did not declare it" >&2; exit 1 ;;
               *) echo "unexpected CI job github-hosted-homebrew ran outside the expected set: $result" >&2; exit 1 ;;
+            esac
+          fi
+          if plan_expects "tap-local" "github-hosted"; then
+            result="$(result_for_job github-hosted-tap-local)"
+            if [[ "$PROVIDER_ADMITTED_GITHUB_HOSTED" == true ]]; then
+              case "$result" in
+                success) ;;
+                skipped) echo "expected CI job github-hosted-tap-local was skipped: a skipped expected result cannot pass" >&2; exit 1 ;;
+                cancelled) echo "expected CI job github-hosted-tap-local was cancelled: a cancelled expected result cannot pass" >&2; exit 1 ;;
+                *) echo "expected CI job github-hosted-tap-local did not pass: $result" >&2; exit 1 ;;
+              esac
+            else
+              case "$result" in
+                skipped) ;;
+                *) echo "selected CI job github-hosted-tap-local ran outside its provider admission (PROVIDER_ADMITTED_GITHUB_HOSTED=$PROVIDER_ADMITTED_GITHUB_HOSTED): $result" >&2; exit 1 ;;
+              esac
+            fi
+          else
+            result="$(result_for_job github-hosted-tap-local)"
+            case "$result" in
+              skipped) ;;
+              success) echo "unexpected CI job github-hosted-tap-local succeeded outside the expected set: the plan did not declare it" >&2; exit 1 ;;
+              *) echo "unexpected CI job github-hosted-tap-local ran outside the expected set: $result" >&2; exit 1 ;;
             esac
           fi
   required:
