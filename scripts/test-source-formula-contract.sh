@@ -22,10 +22,13 @@ sha=$(ruby -e 'print STDIN.read[/\bsha256 "([^"]+)"/, 1]' < "$formula") || true
 
 grep -Fq 'depends_on "rust" => :build' "$formula" || die "formula must build with rust"
 grep -Fq 'std_cargo_args(path: "crates/velnorctl")' "$formula" || die "formula must cargo-install crates/velnorctl"
+grep -Fq 'std_cargo_args(path: "crates/velnor-runner")' "$formula" || die "formula must cargo-install crates/velnor-runner"
 grep -Fq 'system "cargo", "install"' "$formula" || die "formula must cargo install from source"
+grep -Fq 'service do' "$formula" || die "formula must define a service block"
+grep -Fq 'opt_bin/"velnor-runner"' "$formula" || die "service block must run velnor-runner"
 
-if grep -E -n -- 'bin\.install|velnor-runner|velnor-workflow|depends_on arch:' "$formula"; then
-  die "formula must not install velnor-runner/velnor-workflow or pin a bottle arch"
+if grep -E -n -- 'bin\.install|velnor-workflow|depends_on arch:' "$formula"; then
+  die "formula must not install velnor-workflow or pin a bottle arch"
 fi
 
 if grep -E -n -- 'never builds from source|product-manifest|velnorctl-preview' "$formula"; then
