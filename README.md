@@ -1,6 +1,6 @@
 # homebrew-velnor
 
-Homebrew tap for the native `velnorctl` operator CLI.
+Homebrew tap for the native Velnor control-plane toolset.
 
 Install the CLI on macOS with:
 
@@ -9,11 +9,24 @@ brew tap tailrocks/velnor
 brew install velnorctl
 ```
 
-This formula builds `velnorctl` and `velnor-runner` from the matching
-immutable Velnor release source archive, and provides a Homebrew service
-for launchd supervision of the runner daemon.
+The `velnorctl` formula builds `velnorctl`, `velnor-runner`, and
+`velnor-workflow` from one immutable Velnor source archive. It also installs
+the pinned launchd launcher and service plist, package-owned configuration,
+state, work, and log paths, plus a manifest and identity record containing the
+source, package, service, and installed-binary SHA-256 identities.
 
-The formula version follows the Velnor release tag. The current source still
-reports the independently versioned control-plane package version (`0.1.0`)
-from `velnorctl version`; keep that distinction visible until the upstream
-release contract unifies component versions.
+Start the installed service only after configuring the required host mode and
+credentials in the package-owned environment file:
+
+```sh
+brew services start velnorctl
+```
+
+The generated Homebrew feed contract verifies the formula on GitHub-hosted
+CI. Feed mutation is an explicit GitHub-only writer; local Velnor execution
+cannot publish the tap.
+
+The formula version follows the Velnor runner product version. `velnorctl` and
+`velnor-workflow` retain their independently reported crate versions in the
+installed identity until the upstream release contract unifies component
+versions.

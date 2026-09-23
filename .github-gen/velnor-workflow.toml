@@ -28,6 +28,7 @@ task = "brew:tap-local"
 
 [[units]]
 id = "homebrew"
+ci_tasks = ["formula:contract"]
 
 [[units.prerequisites]]
 producer = "tap-local"
