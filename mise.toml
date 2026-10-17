@@ -3,3 +3,7 @@
 [tasks."brew:tap-local"]
 description = "Link this checkout as a trusted tap so bare brew audit resolves it"
 run = "tap_dir=\"$(brew --repo)/Library/Taps/tailrocks\" && mkdir -p \"$tap_dir\" && ln -sfn \"$PWD\" \"$tap_dir/homebrew-velnor\" && brew trust tailrocks/velnor"
+
+[tasks."formula:contract"]
+description = "Verify immutable Velnor source, version, and macOS packaging identities"
+run = "bash scripts/test-source-formula-contract.sh"
